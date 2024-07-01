@@ -67,7 +67,7 @@ def main():
                 response = "Opening terminal"
                 open_terminal()
             elif "stop" in text.lower():
-                response = "Goodbye!"
+                response = "thankyou sir Goodbye!"
                 print(f"Assistant will say: {response}")
                 text_to_speech(response)
                 break
