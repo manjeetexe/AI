@@ -4,6 +4,8 @@ import datetime
 import speech_recognition as sr
 from AppKit import NSSpeechSynthesizer
 import subprocess
+import cv2
+
 
 def recognize_speech_from_mic():
     recognizer = sr.Recognizer()
@@ -49,6 +51,28 @@ def wish():
 def open_terminal():
     subprocess.call(["open", "-a", "Terminal"])
 
+#cammera
+def open_camera():
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("cannot open camera")
+        return
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("can'nt receive frame  (stream end?).Exiting ...")   
+            break
+
+        cv2.imshow('camera', frame)
+
+        if cv2.waitKey(1) == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
 #main function
 def main():
     wish()
@@ -66,6 +90,9 @@ def main():
             elif "open terminal" in text.lower():
                 response = "Opening terminal"
                 open_terminal()
+            elif "open camera" in text.lower():
+                response = "opening camera now."
+                open_camera()
             elif "stop" in text.lower():
                 response = "thankyou sir Goodbye!"
                 print(f"Assistant will say: {response}")
