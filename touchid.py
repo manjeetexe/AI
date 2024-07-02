@@ -6,6 +6,7 @@ import time
 from Foundation import NSBundle
 import objc
 import ctypes
+import subprocess
 
 # Global variable to store the last recognized text
 last_text = ""

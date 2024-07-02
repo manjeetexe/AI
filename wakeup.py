@@ -5,6 +5,7 @@ import subprocess
 import cv2
 import time
 import ctypes
+import os
 
 # Global variable to store the last recognized text
 last_text = ""
@@ -51,33 +52,6 @@ def open_terminal():
 
 def close_terminal():
     subprocess.call(["osascript", "-e", 'tell application "Terminal" to quit'])
-
-def open_camera():
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-        print("Cannot open camera")
-        return
-    
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Can't receive frame (stream end?). Exiting ...")   
-            break
-
-        cv2.imshow('camera', frame)
-
-        if cv2.waitKey(1) == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-def close_camera():
-    global cap
-    if cap.isOpened():
-        cap.release()
-        cv2.destroyAllWindows()
-        print("Camera closed")
 
 def get_time():
     now = datetime.datetime.now()
@@ -175,19 +149,16 @@ def main():
             elif "close terminal" in text.lower():
                 response = "Closing terminal."
                 close_terminal()
-            elif "open camera" in text.lower():
-                response = "Opening camera."
-                open_camera()
-            elif "close camera" in text.lower():
-                response = "Closing camera."
-                close_camera()
             elif any(keyword in text.lower() for keyword in ["what time is it", "tell me the time", "what is the time"]):
                 get_time()
                 continue
+            elif "open spotify" in text.lower():
+                response = "opening spotify"
+                os.system(f"open /Applications/Spotify.app")
             elif "repeat what you say" in text.lower() or "say that again" in text.lower() or "repeat" in text.lower():
                 response = last_text
             else:
-                response = "I'm sorry, I don't understand that command."
+                response = "I'm sorry,please say it again."
 
             print(f"Assistant: {response}")
             text_to_speech(response)
