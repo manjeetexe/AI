@@ -6,6 +6,7 @@ from AppKit import NSSpeechSynthesizer
 import subprocess
 import cv2
 
+import AppKit
 
 def recognize_speech_from_mic():
     recognizer = sr.Recognizer()
