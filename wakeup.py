@@ -5,7 +5,6 @@ import subprocess
 import cv2
 import time
 import ctypes
-import os
 
 # Global variable to store the last recognized text
 last_text = ""
@@ -185,13 +184,10 @@ def main():
             elif any(keyword in text.lower() for keyword in ["what time is it", "tell me the time", "what is the time"]):
                 get_time()
                 continue
-            elif "open spotify" in text.lower():
-                response = "opening spotify"
-                os.system(f"open /Applications/Spotify.app")
             elif "repeat what you say" in text.lower() or "say that again" in text.lower() or "repeat" in text.lower():
                 response = last_text
             else:
-                response = "I'm sorry,please say it again."
+                response = "I'm sorry, I don't understand that command."
 
             print(f"Assistant: {response}")
             text_to_speech(response)

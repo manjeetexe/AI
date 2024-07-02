@@ -1,11 +1,11 @@
 import speech_recognition as sr
 from AppKit import NSSpeechSynthesizer
 import datetime
-import subprocess
 import cv2
 import time
+from Foundation import NSBundle
+import objc
 import ctypes
-import os
 
 # Global variable to store the last recognized text
 last_text = ""
@@ -87,68 +87,48 @@ def get_time():
     print(response)
     text_to_speech(response)
 
-def security_questions(recognizer, microphone):
-    questions = [
-        "What is your name?",
-        "What is your lucky number?",
-        "what is the password ?"
-    ]
+def authenticate_with_touchid():
+    try:
+        # Import necessary frameworks
+        LocalAuthentication = NSBundle.bundleWithPath_('/System/Library/Frameworks/LocalAuthentication.framework')
+        objc.loadBundle(LocalAuthentication, globals(), bundle_path='/System/Library/Frameworks/LocalAuthentication.framework')
 
-    responses = [
-        "Manjeet",
-        "thala",
-        "9370 612327"
-    ]
+        # Define types and functions from LocalAuthentication
+        NSError_ptr = ctypes.POINTER(ctypes.c_void_p)
+        context = objc.objc_getClass('LAContext').alloc().init()
+        context.canEvaluatePolicy_error_(objc.LAPolicyDeviceOwnerAuthenticationWithBiometrics, None)
+        
+        # Perform biometric authentication
+        if context.canEvaluatePolicy_error_(objc.LAPolicyDeviceOwnerAuthenticationWithBiometrics, None):
+            auth_result, error = context.evaluatePolicy_localizedReason_reply_(
+                objc.LAPolicyDeviceOwnerAuthenticationWithBiometrics,
+                "Authenticate to unlock ACE assistant",
+                None
+            )
+            if auth_result:
+                return True
+            else:
+                print(f"Authentication failed: {error}")
+                return False
+        else:
+            print("Biometric authentication not available.")
+            return False
 
-    # Informing about security questions
-    text_to_speech("These are some questions for security purposes.")
-    
-    for i, question in enumerate(questions):
-        print(f"\nListening for: {question}")
-        text_to_speech(question)
-
-        # Listen for answer
-        while True:
-            answer = recognize_speech_from_mic(recognizer, microphone)
-            if answer:
-                print(f"Recognized answer: {answer}")
-                if answer.lower() == responses[i].lower():
-                    print("Correct answer!")
-                    break
-                else:
-                    print("Incorrect answer. Please try again.")
-                    text_to_speech("Incorrect answer. Please try again.")
+    except Exception as e:
+        print(f"Error during authentication: {str(e)}")
+        return False
 
 def main():
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
 
-    # Secure unlock phrase
-    unlock_phrase = "unlock yourself"
+    # Perform Touch ID authentication
+    if not authenticate_with_touchid():
+        print("Touch ID authentication failed.")
+        text_to_speech("Touch ID authentication failed. Access denied.")
+        return
 
-    # Listening for unlock phrase
-    while True:
-        with microphone as source:
-            print("\nListening for unlock phrase...")
-            recognizer.adjust_for_ambient_noise(source)
-            audio = recognizer.listen(source)
-
-        try:
-            phrase = recognizer.recognize_google(audio)
-            print(f"Recognized phrase: {phrase}")
-            if unlock_phrase in phrase.lower():
-                print("Unlock phrase recognized!")
-                break
-
-        except sr.UnknownValueError:
-            pass
-        except sr.RequestError as e:
-            print(f"Could not request results from Google Speech Recognition service; {e}")
-
-    # Once unlocked, ask security questions
-    security_questions(recognizer, microphone)
-
-    # After successfully answering security questions, start assistant loop
+    # Once authenticated, start assistant loop
     wish()
 
     while True:
@@ -156,11 +136,11 @@ def main():
         if text:
             print(f"Recognized text: {text}")
 
-            if "lock yourself" in text.lower():
+            if "lock ACE" in text.lower():
                 response = "Locking ACE. Goodbye!"
                 print(f"Assistant will say: {response}")
                 text_to_speech(response)
-                break 
+                break
 
             if "how are you" in text.lower():
                 response = "I'm fine, thank you."
@@ -185,13 +165,10 @@ def main():
             elif any(keyword in text.lower() for keyword in ["what time is it", "tell me the time", "what is the time"]):
                 get_time()
                 continue
-            elif "open spotify" in text.lower():
-                response = "opening spotify"
-                os.system(f"open /Applications/Spotify.app")
             elif "repeat what you say" in text.lower() or "say that again" in text.lower() or "repeat" in text.lower():
                 response = last_text
             else:
-                response = "I'm sorry,please say it again."
+                response = "I'm sorry, I don't understand that command."
 
             print(f"Assistant: {response}")
             text_to_speech(response)
