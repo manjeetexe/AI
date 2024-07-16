@@ -23,9 +23,10 @@ def recognize_speech_from_mic(recognizer, microphone):
         return text.strip()
     except sr.UnknownValueError:
         print("Sorry, I could not understand the audio.")
+        response = "Sorry, I could not understand the audio."
     except sr.RequestError as e:
         print(f"Could not request results from Google Speech Recognition service; {e}")
-
+        response = "Could not request results from Google Speech Recognition service; {e}"
     return None
 
 def text_to_speech(text):
@@ -38,17 +39,24 @@ def wish():
     hour = int(datetime.datetime.now().hour)
 
     if 0 <= hour < 12:
-        response = "Good morning. I am ACE. How can I assist you?"
+        response = "Good morning. I am ZENOX. How can I assist you?"
     elif 12 <= hour < 18:
-        response = "Good afternoon. I am ACE. How can I assist you?"
+        response = "Good afternoon. I am ZENOX. How can I assist you?"
     else:
-        response = "Good evening. I am ACE. How can I assist you?"
+        response = "Good evening. I am ZENOX. How can I assist you?"
 
     print(response)
     text_to_speech(response)
 
 def open_terminal():
     subprocess.call(["open", "-a", "Terminal"])
+
+daily_routine = {
+    "morning": "7:00 AM - Wake up and exercise.\n9:00 AM - Have breakfast.\n10:00 AM - Start studying.",
+    "afternoon": "12:00 PM - Lunch break.\n3:00 PM - repeate studing part.\n5:00 PM - practice coding.",
+    "evening": "6:00 PM - Dinner.\n7:00 PM - repeate the coding part.\n11:00 PM - break time and can have fun.\n1:00 AM - sleeping time"
+                }
+
 
 def close_terminal():
     subprocess.call(["osascript", "-e", 'tell application "Terminal" to quit'])
@@ -95,9 +103,9 @@ def security_questions(recognizer, microphone):
     ]
 
     responses = [
-        "Manjeet",
-        "thala",
-        "9370 612327"
+        "My name is Manjeet",
+        "7",
+        "My password is 9370 612327"
     ]
 
     # Informing about security questions
@@ -157,25 +165,44 @@ def main():
             print(f"Recognized text: {text}")
 
             if "lock yourself" in text.lower():
-                response = "Locking ACE. Goodbye!"
+                response = "Locking ZENOX."
                 print(f"Assistant will say: {response}")
                 text_to_speech(response)
                 break 
 
-            if "how are you" in text.lower():
-                response = "I'm fine, thank you."
+            if any(keyword in text.lower() for keyword in ["how are you", "how r u", "how are u","how r you"]):
+                response = "I'm fine, what about you sir"
+            elif any(keyword in text.lower() for keyword in ["i am also fine", "i am fine to", "i am good"]):
+                response = "that's great, how can i assist you today?"
+            elif any(keyword in text.lower() for keyword in ["little bit sad", "not good ", "i am not well","felling lonely"]): 
+                response = "I am always here for you sir,tell me if i can help you"   
+            elif "NO it's not an big thing" in text.lower():
+                response = "Ok sir, so how can i assist you today sir" 
             elif "what is your name" in text.lower():
-                response = "My name is ACE."
-            elif "who is your master" in text.lower():
-                response = "My creator is Manjeet Sharma."
+                response = "My name is ZENOX,how can i assist you sir."
+            elif "who is your creator" in text.lower():
+                response = "My creator is Manjeet Sharma."   
             elif "tell me something about you" in text.lower():
-                response = "I am an artificial intelligence assistant created by Manjeet. I was built on June 29, 2024."
+                response = "I am an artificial intelligence assistant name ZENOX,I built on june 29 2024,I designed to help and assist my master."
+            elif any(keyword in text.lower() for keyword in ["what is my mother's name", "what is name of my mother", "mother name","mother's name"]):
+                response = "your's mother name is Neetu Sharma"
             elif "open terminal" in text.lower():
                 response = "Opening terminal."
                 open_terminal()
             elif "close terminal" in text.lower():
                 response = "Closing terminal."
                 close_terminal()
+            elif "today's routine" in text.lower() or "what is my today routine" in text.lower():
+                # Determine the part of the day
+                hour = datetime.datetime.now().hour
+                if 5 <= hour < 12:
+                    part_of_day = "morning"
+                elif 12 <= hour < 17:
+                    part_of_day = "afternoon"
+                else:
+                    part_of_day = "evening"
+
+                response = f"Today is {datetime.datetime.now().strftime('%A, %B %d, %Y')}. Here's your {part_of_day} routine:\n{daily_routine.get(part_of_day, 'No specific routine planned.')}"
             elif "open camera" in text.lower():
                 response = "Opening camera."
                 open_camera()
