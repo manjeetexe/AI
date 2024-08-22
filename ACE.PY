@@ -98,14 +98,14 @@ def get_time():
 def security_questions(recognizer, microphone):
     questions = [
         "What is your name?",
-        "What is your lucky number?",
+        "What is your favourite pet animal?",
         "what is the password ?"
     ]
 
     responses = [
         "My name is Manjeet",
-        "7",
-        "My password is 9370 612327"
+        "cat",
+        "My password is 9370 612325"
     ]
 
     # Informing about security questions
